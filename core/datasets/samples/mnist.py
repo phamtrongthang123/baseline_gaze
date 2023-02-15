@@ -1,10 +1,11 @@
 import torch
 import pandas as pd
+
 """You can download it from https://github.com/pjreddie/mnist-csv-png or run the scripts in data_generator/mnist-csv-png"""
-__all__ = ['MNISTDataset']
+__all__ = ["MNISTDataset"]
 
 
-class MNISTDataset():
+class MNISTDataset:
     def __init__(self, csv_path, is_rgb=False, is_train=True):
         df = pd.read_csv(csv_path, header=None)
         self.data = df.loc[:, 1:].values.reshape(-1, 1, 28, 28)
@@ -15,7 +16,7 @@ class MNISTDataset():
             self.data = self.data.repeat(3, 1)
 
     def __getitem__(self, i):
-        img = torch.FloatTensor(self.data[i]) / 255.
+        img = torch.FloatTensor(self.data[i]) / 255.0
         lbl = self.labels[i]
         return img, lbl
 
@@ -23,14 +24,14 @@ class MNISTDataset():
         return len(self.data)
 
 
-if __name__ == '__main__':
-    ds = MNISTDataset('data/MNIST/mnist_test.csv')
+if __name__ == "__main__":
+    ds = MNISTDataset("data/MNIST/mnist_test.csv")
     print(len(ds))
     for i, (im, lbl) in enumerate(ds):
         print(im.shape, lbl)
         break
 
-    ds = MNISTDataset('data/MNIST/mnist_test.csv', is_rgb=True)
+    ds = MNISTDataset("data/MNIST/mnist_test.csv", is_rgb=True)
     print(len(ds))
     for i, (im, lbl) in enumerate(ds):
         print(im.shape, lbl)

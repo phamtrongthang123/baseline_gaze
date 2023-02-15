@@ -9,14 +9,13 @@ from ..utils import getter
 class MixedLoss(nn.Module):
     def __init__(self, losses, weights=None):
         super().__init__()
-        self.loss_fns = nn.ModuleList([getter.get_instance(loss)
-                                       for loss in losses])
+        self.loss_fns = nn.ModuleList([getter.get_instance(loss) for loss in losses])
         if weights is None:
             weights = torch.ones(len(losses))
         elif isinstance(weights, list):
             weights = torch.FloatTensor(weights)
         weights /= weights.sum()
-        self.register_buffer('weights', weights)
+        self.register_buffer("weights", weights)
 
     def forward(self, output, target):
         total = 0.0

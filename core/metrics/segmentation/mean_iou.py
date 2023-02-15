@@ -2,10 +2,10 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-__all__ = ['MeanIoU']
+__all__ = ["MeanIoU"]
 
 
-class MeanIoU():
+class MeanIoU:
     def __init__(self, nclasses, ignore_index=None, eps=1e-9):
         super().__init__()
         assert nclasses > 0
@@ -47,6 +47,6 @@ class MeanIoU():
     def summary(self):
         class_iou = (self.intersection + self.eps) / (self.union + self.eps)
 
-        print(f'mIoU: {self.value():.6f}')
+        print(f"mIoU: {self.value():.6f}")
         for i, x in enumerate(class_iou):
-            print(f'\tClass {i:3d}: {x:.6f}')
+            print(f"\tClass {i:3d}: {x:.6f}")

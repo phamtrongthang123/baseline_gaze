@@ -12,7 +12,7 @@ class ImageFolderDataset:
     def __getitem__(self, index):
         filename = self.filenames[index]
         img_path = os.path.join(self.dir, filename)
-        im = Image.open(img_path).convert('RGB')
+        im = Image.open(img_path).convert("RGB")
         im = self.transforms(im)
         return im, filename
 

@@ -5,16 +5,17 @@ import sys
 
 from .logger_template import LoggerTemplate
 
+
 class NeptuneLogger(LoggerTemplate):
     def __init__(
         self,
         project_name: str,
         name: str,
         path: str,
-        api_token: Optional[str]=None,
-        model_params: Optional[Dict]=None,
-        tags: Optional[List[str]]=None,
-        mode="async"
+        api_token: Optional[str] = None,
+        model_params: Optional[Dict] = None,
+        tags: Optional[List[str]] = None,
+        mode="async",
     ):
         """
         Args:
@@ -32,7 +33,7 @@ class NeptuneLogger(LoggerTemplate):
             api_token = os.environ.get("NEPTUNE_API_TOKEN", None)
             if api_token is None:
                 raise ValueError("NEPTUNE_API_TOKEN not found")
-        self.path=path
+        self.path = path
         os.makedirs(path, exist_ok=True)
         run = neptune.init(
             project=project_name,
@@ -48,8 +49,7 @@ class NeptuneLogger(LoggerTemplate):
             run["sys/tags"].add(*tags)
 
         self.run = run
-        self.run["run_cmd"] = ' '.join(sys.argv)
-
+        self.run["run_cmd"] = " ".join(sys.argv)
 
     def update_scalar(self, tag, value, step):
         self.run[tag].log(value, step=step)

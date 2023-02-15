@@ -1,10 +1,10 @@
 import torch
 import torch.nn.functional as F
 
-__all__ = ['DiceScore']
+__all__ = ["DiceScore"]
 
 
-class DiceScore():
+class DiceScore:
     def __init__(self, nclasses, ignore_index=None, eps=1e-6):
         super().__init__()
         assert nclasses > 0
@@ -45,6 +45,6 @@ class DiceScore():
         class_iou = self.mean_class / self.sample_size
         dice_score = class_iou.mean()
 
-        print(f'+ Dice Score: {dice_score:.6f}')
+        print(f"+ Dice Score: {dice_score:.6f}")
         for i, x in enumerate(class_iou):
-            print(f'\tClass {i:3d}: {x:.6f}')
+            print(f"\tClass {i:3d}: {x:.6f}")

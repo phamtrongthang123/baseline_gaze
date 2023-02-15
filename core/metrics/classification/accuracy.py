@@ -1,10 +1,10 @@
 import torch
 
 
-__all__ = ['Accuracy']
+__all__ = ["Accuracy"]
 
 
-class Accuracy():
+class Accuracy:
     def __init__(self, *args, **kwargs):
         self.reset()
 
@@ -23,4 +23,4 @@ class Accuracy():
         return self.correct / self.sample_size
 
     def summary(self):
-        print(f'+ Accuracy: {self.value()}')
+        print(f"+ Accuracy: {self.value()}")

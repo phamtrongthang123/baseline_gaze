@@ -20,8 +20,7 @@ class AverageValueMeter:
             self.mean_old = self.mean
             self.m_s = 0.0
         else:
-            self.mean = self.mean_old + \
-                (value - n * self.mean_old) / float(self.n)
+            self.mean = self.mean_old + (value - n * self.mean_old) / float(self.n)
             self.m_s += (value - self.mean_old) * (value - self.mean)
             self.mean_old = self.mean
             self.std = math.sqrt(self.m_s / (self.n - 1.0))

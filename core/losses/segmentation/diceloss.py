@@ -4,10 +4,10 @@ import torch.nn.functional as F
 
 
 class DiceLoss(nn.Module):
-    r'''
+    r"""
     Dice Loss
     Ref: https://discuss.pytorch.org/t/one-hot-encoding-with-autograd-dice-loss/9781/8
-    '''
+    """
 
     def __init__(self, weights=None, ignore_index=None, size_average=True, eps=1e-6):
         super().__init__()

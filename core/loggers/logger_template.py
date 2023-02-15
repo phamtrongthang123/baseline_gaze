@@ -1,4 +1,4 @@
-class LoggerTemplate():
+class LoggerTemplate:
     def __init__(self, *args, **kwargs):
         raise NotImplementedError
 

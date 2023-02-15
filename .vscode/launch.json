@@ -5,6 +5,34 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Evaluation",
+            "type": "python",
+            "request": "launch",
+            "program": "test.py",
+            "env": { "name":"CUDA_VISIBLE_DEVICES", "value":"0"},
+            "console": "integratedTerminal",
+            "args": ["--config", "configs/val/gazebaseline_toy.yaml", "--gpus", "0"],
+            "justMyCode": true,
+        },
+        {
+            "name": "Current project",
+            "type": "python",
+            "request": "launch",
+            "program": "train.py",
+            "env": { "name":"CUDA_VISIBLE_DEVICES", "value":"0"},
+            "console": "integratedTerminal",
+            "args": ["--config", "configs/train/gazebaseline_toy.yaml", "--gpus", "0"],
+            "justMyCode": true,
+        },
+        {
+            "name": "Python: dataset",
+            "type": "python",
+            "request": "launch",
+            "program": "core/datasets/GazeToy.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "Python: preprocess",
             "type": "python",
             "request": "launch",

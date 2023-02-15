@@ -1,8 +1,7 @@
-
 from torch.utils.tensorboard import SummaryWriter
 
 
-class TensorboardLogger():
+class TensorboardLogger:
     def __init__(self, path):
         assert path != None, "path is None"
         self.writer = SummaryWriter(log_dir=path)
@@ -11,10 +10,13 @@ class TensorboardLogger():
         self.writer.add_scalar(tag, value, step)
 
     def update_loss(self, phase, value, step):
-        self.update_scalar(f'{phase}/loss', value, step)
+        self.update_scalar(f"{phase}/loss", value, step)
 
     def update_metric(self, phase, metric, value, step):
-        self.update_scalar(f'{phase}/{metric}', value, step)
+        self.update_scalar(f"{phase}/{metric}", value, step)
 
     def update_lr(self, gid, value, step):
-        self.update_scalar(f'lr/group_{gid}', value, step)
+        self.update_scalar(f"lr/group_{gid}", value, step)
+
+    def add_graph(self, model, input, verbose=False):
+        self.writer.add_graph(model, input, verbose=verbose)

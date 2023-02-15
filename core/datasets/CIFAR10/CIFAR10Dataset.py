@@ -5,10 +5,11 @@ from typing import Any, Callable, Optional, Tuple
 
 import numpy as np
 from PIL import Image
-__all__ = ['CIFAR10Dataset']
+
+__all__ = ["CIFAR10Dataset"]
 
 
-class CIFAR10Dataset():
+class CIFAR10Dataset:
     def __init__(self, datapath, metapath, is_train=True):
         """_summary_
 
@@ -18,9 +19,12 @@ class CIFAR10Dataset():
             is_train (bool, optional): _description_. Defaults to True.
         """
         self.transform = transforms.Compose(
-            [transforms.Resize((224,224)),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+            [
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            ]
+        )
         self.datalist = datapath
         self.meta = metapath
         self.is_train = is_train
@@ -39,12 +43,9 @@ class CIFAR10Dataset():
         self.data = self.data.transpose((0, 2, 3, 1))  # convert to HWC
         with open(self.meta, "rb") as infile:
             data = pickle.load(infile, encoding="latin1")
-            self.classes = data['label_names']
+            self.classes = data["label_names"]
         self.class_to_idx = {_class: i for i, _class in enumerate(self.classes)}
         # print(self.targets, self.classes)
-    
-
-
 
     def __getitem__(self, index):
         img, target = self.data[index], self.targets[index]
@@ -65,8 +66,13 @@ class CIFAR10Dataset():
         return len(self.data)
 
 
-if __name__ == '__main__':
-    ds = CIFAR10Dataset(datapath = ['/media/aioz-thang/data3/aioz-thang/jvn/torchism/data/CIFAR10/cifar-10-batches-py/test_batch'], metapath='/media/aioz-thang/data3/aioz-thang/jvn/torchism/data/CIFAR10/cifar-10-batches-py/batches.meta')
+if __name__ == "__main__":
+    ds = CIFAR10Dataset(
+        datapath=[
+            "/media/aioz-thang/data3/aioz-thang/jvn/torchism/data/CIFAR10/cifar-10-batches-py/test_batch"
+        ],
+        metapath="/media/aioz-thang/data3/aioz-thang/jvn/torchism/data/CIFAR10/cifar-10-batches-py/batches.meta",
+    )
     print(len(ds))
     for i, (im, lbl) in enumerate(ds):
         print(im.shape, lbl)

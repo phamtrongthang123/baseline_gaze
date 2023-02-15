@@ -5,10 +5,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 
-__all__ = ['ConfusionMatrix']
+__all__ = ["ConfusionMatrix"]
 
 
-class ConfusionMatrix():
+class ConfusionMatrix:
     def __init__(self, nclasses, print=True, savefig_dir=None):
         self.nclasses = nclasses
         self.print = print
@@ -17,9 +17,9 @@ class ConfusionMatrix():
 
     def update(self, output, target):
         pred = torch.argmax(output, dim=1)
-        self.cm += confusion_matrix(target.cpu().numpy(),
-                                    pred.cpu().numpy(),
-                                    labels=range(self.nclasses))
+        self.cm += confusion_matrix(
+            target.cpu().numpy(), pred.cpu().numpy(), labels=range(self.nclasses)
+        )
 
     def reset(self):
         self.cm = np.zeros(shape=(self.nclasses, self.nclasses))
@@ -28,14 +28,14 @@ class ConfusionMatrix():
         return None
 
     def summary(self):
-        print('+ Confusion matrix: ')
+        print("+ Confusion matrix: ")
         if self.print:
             print(self.cm)
         if self.savefig_dir is not None:
-            df_cm = pd.DataFrame(self.cm,
-                                 index=range(self.nclasses),
-                                 columns=range(self.nclasses))
+            df_cm = pd.DataFrame(
+                self.cm, index=range(self.nclasses), columns=range(self.nclasses)
+            )
             plt.figure(figsize=(10, 7))
-            sns.heatmap(df_cm, annot=True, cmap='YlGnBu')
+            sns.heatmap(df_cm, annot=True, cmap="YlGnBu")
             plt.tight_layout()
-            plt.savefig(self.savefig_dir + '/cm.png')
+            plt.savefig(self.savefig_dir + "/cm.png")

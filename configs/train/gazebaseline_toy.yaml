@@ -1,0 +1,66 @@
+id: sample-toying
+pretrained: null
+seed: 420
+amp: False
+model:
+    name: GazeBaseline
+    args:
+        config: 
+            num_attention_heads: 8
+            attention_probs_dropout_prob: 0.0
+            hidden_dropout_prob: 0.0
+            num_hidden_layers: 6
+            hidden_size: 512
+            vocab_size: 1428
+            max_number_sent: 20
+            intermediate_size: 1024
+            vocab_path: /home/ptthang/gaze_sample/data_here/vocab.json
+optimizer:
+    name: AdamW
+    args:
+        lr: 1.0e-4
+loss:
+    name: CrossEntropyLoss
+    args:
+        # label_smoothing: 0.1
+metric:
+    - name: Accuracy
+      args:
+    - name: F1
+      args:
+        nclasses: 10
+scheduler: 
+    name: WarmupLinearCosineAnnealing
+    args:
+        lr_warmup_epochs: 5
+dataset: 
+    train:
+        name: GazeToy
+        args:
+            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata.json
+            vocab: /home/ptthang/gaze_sample/data_here/vocab.json
+            is_train: True 
+        loader:
+            name: DataLoader
+            args:
+                batch_size: 1
+                shuffle: False
+                pin_memory: True
+    val:
+        name: GazeRealEval
+        args:
+            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata.json
+            vocab: /home/ptthang/gaze_sample/data_here/vocab.json
+            is_train: False 
+        loader:
+            name: DataLoader
+            args:
+                batch_size: 1
+                shuffle: False
+                pin_memory: True
+
+trainer: 
+    nepochs: 100
+    val_step: 1
+    log_step: 1
+    log_dir: runs

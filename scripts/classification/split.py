@@ -2,18 +2,18 @@ import csv
 import argparse
 import random
 
-TRAIN = 'train_train'
-VAL = 'train_val'
+TRAIN = "train_train"
+VAL = "train_val"
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-csv', type=str,
-                    help='path to csv file')
-parser.add_argument('-ratio', type=float, default=0.8,
-                    help='ratio of the train set (default: 0.8)')
-parser.add_argument('-seed', type=int, default=3698,
-                    help='random seed (default: 3698)')
-parser.add_argument('-out', type=str, default='.',
-                    help='directory to save the splits (default: .)')
+parser.add_argument("-csv", type=str, help="path to csv file")
+parser.add_argument(
+    "-ratio", type=float, default=0.8, help="ratio of the train set (default: 0.8)"
+)
+parser.add_argument("-seed", type=int, default=3698, help="random seed (default: 3698)")
+parser.add_argument(
+    "-out", type=str, default=".", help="directory to save the splits (default: .)"
+)
 
 args = parser.parse_args()
 
@@ -44,10 +44,6 @@ for cls_id, cls_list in d.items():
 
 # Save split
 for split, classes in splits.items():
-    out = [['filename', 'category']]
-    out.extend([
-        [fn, cl]
-        for cl, fns in classes.items()
-        for fn in fns
-    ])
-    csv.writer(open(f'{args.out}/{split}.csv', 'w')).writerows(out)
+    out = [["filename", "category"]]
+    out.extend([[fn, cl] for cl, fns in classes.items() for fn in fns])
+    csv.writer(open(f"{args.out}/{split}.csv", "w")).writerows(out)

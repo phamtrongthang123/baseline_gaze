@@ -2,7 +2,7 @@ import torch
 
 from core.utils import getter
 
-__all__ = ['MultiClsMetric']
+__all__ = ["MultiClsMetric"]
 
 
 def take_last(output, target):
@@ -31,12 +31,12 @@ def take_mean(output, target):
 
 
 class MultiClsMetric:
-    def __init__(self, metric_cfg, strategy='last'):
+    def __init__(self, metric_cfg, strategy="last"):
         self.metric = getter.get_instance(metric_cfg)
         self.strategy = {
-            'last': take_last,
-            'all': take_all,
-            'mean': take_mean,
+            "last": take_last,
+            "all": take_all,
+            "mean": take_mean,
         }[strategy]
 
         self.reset = self.metric.reset

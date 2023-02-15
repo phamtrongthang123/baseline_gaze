@@ -11,7 +11,7 @@ import json
 
 from tqdm import tqdm
 
-__all__ = ["GazeToy"]
+__all__ = ["GazeReal"]
 
 
 def parse_sent(sent):
@@ -20,7 +20,7 @@ def parse_sent(sent):
     return res
 
 
-class GazeToy(torch.utils.data.Dataset):
+class GazeReal(torch.utils.data.Dataset):
     def __init__(self, metadata, vocab, is_train=True):
         self.data_transforms = {
             "train": transforms.Compose(
@@ -43,7 +43,6 @@ class GazeToy(torch.utils.data.Dataset):
         with open(self.metadata, "r") as f:
             self.data = json.load(f)
         self.dicom_ids = list(self.data.keys())
-        self.dicom_ids = self.dicom_ids[:50]
         with open(vocab, "r") as f:
             self.vocab = json.load(f)
 
@@ -72,8 +71,7 @@ class GazeToy(torch.utils.data.Dataset):
             fixation_data, is_reflacx
         )
         # fixation [fix_len, 2], duration [fix_len,1], torch cat them together to [fix_len, 3]
-        fixation = torch.cat((fixation, ftimestamp_e - ftimestamp_s), dim=1)
-        fixation[:, 2] = fixation[:, 2] / fixation[:, 2].max()
+        fixation = torch.cat((fixation, ftimestamp_s - ftimestamp_e), dim=1)
         fixation, fix_masks = self.__padding_mask(fixation)
         if is_reflacx:
             transcript_path = self.data[dicom_id]["transcript_reflacx"][0]
@@ -177,7 +175,6 @@ class GazeToy(torch.utils.data.Dataset):
         x = torch.tensor(fixation_data["x"])
         y = torch.tensor(fixation_data["y"])
         fixation = torch.stack((x, y), dim=1)
-        # fixation = fixation / fixation.max()
         start_time = torch.tensor(fixation_data["start_time"]).unsqueeze(1)
         end_time = torch.tensor(fixation_data["end_time"]).unsqueeze(1)
         return fixation, start_time, end_time
@@ -265,7 +262,7 @@ class GazeToy(torch.utils.data.Dataset):
 
 
 if __name__ == "__main__":
-    ds = GazeToy(
+    ds = GazeReal(
         metadata="/home/ptthang/gaze_sample/data_here/reflacx_new_metadata.json",
         vocab="/home/ptthang/gaze_sample/data_here/vocab.json",
     )
