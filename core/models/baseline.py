@@ -53,6 +53,9 @@ class GazeBaseline(nn.Module):
             config["hidden_size"], dropout=config["hidden_dropout_prob"]
         )
         self.double_pe = DoublePE(config)
+        self.learnable_pe = nn.Embedding(self.max_number_sent,400* config["hidden_size"])
+
+        self.number_prediction = nn.Sequential(nn.Linear(config["hidden_size"], config["hidden_size"]), nn.ReLU(), nn.Linear(config["hidden_size"], 1))
 
     def forward(self, img, fixation, fix_masks, captions, cap_masks):
         # img torch.Size([1, 3, 224, 224]) fixation torch.Size([1, 400, 3]) fix_masks torch.Size([1, 400, 1]) captions torch.Size([1, 3, 50]) cap_masks torch.Size([1, 3, 50])
@@ -71,6 +74,9 @@ class GazeBaseline(nn.Module):
         fused_img_fix = self.image_fixation_fusion(
             img_features, fix_feature, length=captions.shape[1]
         )  # torch.Size([ 3, 400, 512])
+        num = self.number_prediction(fused_img_fix[0].mean(0).unsqueeze(0))
+        # learnable_pe = self.learnable_pe.weight.unsqueeze(0).view(self.max_number_sent, 400, -1)
+        # fused_img_fix = fused_img_fix + learnable_pe[:captions.shape[1]]
 
         # embedding for caption
         cap_feature, cap_masks_tril = self.caption_embed(
@@ -82,7 +88,7 @@ class GazeBaseline(nn.Module):
         output_sent = self.decoder_word(output)  # torch.Size([3, 50, vocab_size])
         # torch.Size([3, 50, 512])
         tmp = torch.argmax(output_sent, dim=2)
-        return output_sent
+        return output_sent, num
 
     def build_loss(self, pred, target, mask):
         # torch.Size([max_number_sent/gt_length, 50, vocab_size]) torch.Size([1, gt_length, 50]) torch.Size([1, gt_length, 50])
@@ -125,6 +131,9 @@ class GazeBaseline(nn.Module):
         fused_img_fix = self.image_fixation_fusion(
             img_features, fix_feature, self.max_number_sent
         )  # torch.Size([ maxnumsent, 50, 512])
+        num = self.number_prediction(fused_img_fix[0].mean(0).unsqueeze(0))
+        # learnable_pe = self.learnable_pe.weight.unsqueeze(0).view(self.max_number_sent, 400, -1)
+        # fused_img_fix = fused_img_fix + learnable_pe
         # decoding
         # start with <sos> token
         # torch.Size([1, 1])
@@ -169,4 +178,4 @@ class GazeBaseline(nn.Module):
                 word_cap = next_token.unsqueeze(1)
             else:
                 word_cap = torch.cat((word_cap, next_token.unsqueeze(1)), dim=1)
-        return word_cap, probs_cap
+        return word_cap, probs_cap, num

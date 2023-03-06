@@ -1,5 +1,5 @@
-id: sample-label-smoothing-pe2d
-pretrained: null
+id: sample-label-smoothing-pe2d-023_02_15-16_36_10-resume
+pretrained: /home/ptthang/gaze_sample/runs/sample-label-smoothing-pe2d-2023_02_15-16_36_10/best_loss.pth
 seed: 2612
 amp: False
 model:
@@ -18,7 +18,7 @@ model:
 optimizer:
     name: AdamW
     args:
-        lr: 1.0e-4
+        lr: 1.0e-3
 loss:
     name: CrossEntropyLoss
     args:
@@ -37,7 +37,7 @@ dataset:
     train:
         name: GazeReal
         args:
-            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata.json
+            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_train.json
             vocab: /home/ptthang/gaze_sample/data_here/vocab.json
             is_train: True 
         loader:
@@ -49,7 +49,7 @@ dataset:
     val:
         name: GazeRealEval
         args:
-            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata.json
+            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val.json
             vocab: /home/ptthang/gaze_sample/data_here/vocab.json
             is_train: False 
         loader:

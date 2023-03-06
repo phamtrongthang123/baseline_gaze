@@ -12,6 +12,7 @@ from ..utils.device import move_to, detach
 from ..utils.exponential_moving_average import ExponentialMovingAverage
 from ..utils.decoding import save2json, tensor2words
 from ..loggers import TensorboardLogger, NeptuneLogger
+from ..metrics import GazeTranscript
 
 __all__ = ["SupervisedEvaluator"]
 
@@ -97,19 +98,19 @@ class SupervisedEvaluator:
 
         # 6: Define metrics
         set_seed(config["seed"])
-        self.metric = {mcfg["name"]: get_instance(mcfg) for mcfg in config["metric"]}
+        self.metric = {mcfg["name"]: 0.0 for mcfg in config["metric"]}
 
     @torch.no_grad()
     def val_epoch(self, dataloader):
         dataset = dataloader.dataset
         running_loss = AverageValueMeter()
-        for m in self.metric.values():
-            m.reset()
 
         self.model.eval()
         print("Evaluating........")
         sentences = []
         dicom_ids = []
+        sentences_gt = []
+        dicom_ids_gt = []
 
         progress_bar = tqdm(dataloader)
         for i, (indexes, img, fixation, fix_masks, transcript, sent_masks) in enumerate(
@@ -141,6 +142,8 @@ class SupervisedEvaluator:
             # store sentences and dicom_ids
             sentences.extend([tensor2words(outs, dataset.vocab)])
             dicom_ids.extend([dataset.dicom_ids[idx] for idx in indexes])
+            sentences_gt.extend([tensor2words(transcript_out.squeeze(0), dataset.vocab)])
+            dicom_ids_gt.extend([dataset.dicom_ids[idx] for idx in indexes])
 
         print("+ Evaluation result")
         avg_loss = running_loss.value()[0]
@@ -149,10 +152,13 @@ class SupervisedEvaluator:
 
         res = {dicom_id: sentence for dicom_id, sentence in zip(dicom_ids, sentences)}
         save2json(res, os.path.join(self.save_dir, "val_result.json"))
-        # for k in self.metric.keys():
-        #     m = self.metric[k].value()
-        #     self.metric[k].summary()
-        #     self.val_metric[k].append(m)
+        gt_res = {dicom_id: sentence for dicom_id, sentence in zip(dicom_ids_gt, sentences_gt)}
+        save2json(gt_res, os.path.join(self.save_dir, "val_result_gt.json"))
+        metric_instance = GazeTranscript(ground_truth_filenames=os.path.join(self.save_dir, "val_result_gt.json"), prediction_filename=os.path.join(self.save_dir, "val_result.json"), verbose=True)
+        scores = metric_instance.evaluate_transcript()
+        for k in self.metric.keys():
+            m = scores[k]
+            self.val_metric[k].append(m)
 
     def eval(self, val_dataloader):
         set_seed(self.config["seed"])

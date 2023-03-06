@@ -1,5 +1,5 @@
 id: sample-label-smoothing
-pretrained: /home/ptthang/gaze_sample/runs/sample-label-smoothing-2023_02_12-23_27_33/best_loss.pth
+pretrained: /home/ptthang/gaze_sample/runs/sample-label-smoothing-pe2d-023_02_15-16_36_10-resume-2023_02_18-13_02_27/last.pth
 seed: 2612
 amp: False
 model:
@@ -24,11 +24,14 @@ loss:
     args:
         # label_smoothing: 0.1
 metric:
-    - name: Accuracy
-      args:
-    - name: F1
-      args:
-        nclasses: 10
+    - name: Bleu_1
+    - name: Bleu_2
+    - name: Bleu_3
+    - name: Bleu_4
+    - name: CIDEr
+    - name: METEOR
+    - name: ROUGE_L
+
 scheduler: 
     name: WarmupLinearCosineAnnealing
     args:
@@ -49,7 +52,7 @@ dataset:
     val:
         name: GazeRealEval
         args:
-            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata.json
+            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val.json
             vocab: /home/ptthang/gaze_sample/data_here/vocab.json
             is_train: False 
         loader:

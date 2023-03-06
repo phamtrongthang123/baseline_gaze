@@ -1,6 +1,5 @@
-# Torchism 
-General template for my PyTorch projects.
-I will add more examples other than supervised mnist in the future.
+# GazeBaseline
+
 
 ## Dependency 
 ```
@@ -25,4 +24,11 @@ Or if you want a quick test, change the neptune logger in the trainer to tensorb
 ```
 python train.py --config configs/train/sample.yaml --gpus 0
 tensorboard --logdir=runs 
+```
+
+## Result 
+```json
+{
+    dicom_id: [caption_1, caption_2, ...]
+}
 ```

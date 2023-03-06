@@ -41,18 +41,18 @@ class PositionalEncoding(nn.Module):
             x = x + self.pe[: x.shape[1]].view(1, -1, self.d_model)
         return self.dropout(x)
 
-
+from torchvision.models import resnet50, ResNet50_Weights
 class ImageEncoder(nn.Module):
     def __init__(self, config):
         super().__init__()
-        self.img_encoder = torchvision.models.resnet18(
-            pretrained=True
+        self.img_encoder = torchvision.models.resnet50(
+            weights=ResNet50_Weights.IMAGENET1K_V2
         )  # shape out = 512 for resnet 18
         self.img_mapping_to_hidden = nn.Sequential(
             nn.Linear(self.img_encoder.fc.in_features, config["hidden_size"]),
             nn.ReLU(),
             nn.Linear(config["hidden_size"], config["hidden_size"]),
-        )  # make it always to 512 = hidden size
+        )  # make it always to hidden size
         self.img_encoder.fc = nn.Identity()
 
     def forward(self, x):
