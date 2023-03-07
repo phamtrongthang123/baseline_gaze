@@ -43,7 +43,7 @@ class GazeToy(torch.utils.data.Dataset):
         with open(self.metadata, "r") as f:
             self.data = json.load(f)
         self.dicom_ids = list(self.data.keys())
-        self.dicom_ids = self.dicom_ids[:5]
+        self.dicom_ids = self.dicom_ids[:8]
         with open(vocab, "r") as f:
             self.vocab = json.load(f)
 
