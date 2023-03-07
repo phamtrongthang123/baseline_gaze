@@ -9,7 +9,8 @@ import einops
 import math
 
 import torchvision
-
+# TODO: I'm planning to find a way to fuse query embedding with transformer to query the fused_img_fix. Not + them.
+# But this version can be about fixing the num prediction. Well you can actually fine tune or dev a heuristic version at predicting number of sentences if you want. But just fix it to see if it affects.
 
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model: int, dropout: float = 0.0, max_len: int = 5000):
