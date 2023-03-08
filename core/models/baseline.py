@@ -55,7 +55,7 @@ class GazeBaseline(nn.Module):
         self.double_pe = DoublePE(config)
         self.learnable_pe = nn.Embedding(self.max_number_sent,400* config["hidden_size"])
 
-        self.number_prediction = nn.Sequential(nn.Linear(config["hidden_size"], config["hidden_size"]), nn.ReLU(), nn.Linear(config["hidden_size"], 1))
+        self.number_prediction = nn.Sequential(nn.Linear(config["hidden_size"], config["hidden_size"]), nn.ReLU(), nn.Linear(config["hidden_size"], 21))
 
     def forward(self, img, fixation, fix_masks, captions, cap_masks):
         # img torch.Size([1, 3, 224, 224]) fixation torch.Size([1, 400, 3]) fix_masks torch.Size([1, 400, 1]) captions torch.Size([1, 3, 50]) cap_masks torch.Size([1, 3, 50])

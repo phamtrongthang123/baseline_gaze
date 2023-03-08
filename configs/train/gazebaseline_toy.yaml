@@ -2,6 +2,7 @@ id: sample-toying
 pretrained: null
 seed: 420
 amp: False
+max_number_sent: 20
 model:
     name: GazeBaseline3
     args:

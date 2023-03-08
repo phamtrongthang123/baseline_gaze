@@ -1,11 +1,11 @@
-id: label-smoothing-pe2d-thang-config
+id: label-smoothing-baseline3-thang-config
 pretrained: null
 seed: 420 # or 2210
 amp: False
 max_number_sent: 20
 
 model:
-    name: GazeBaseline
+    name: GazeBaseline3
     args:
         config: 
             num_attention_heads: 12

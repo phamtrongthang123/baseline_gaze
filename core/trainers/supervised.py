@@ -171,7 +171,8 @@ class SupervisedTrainer:
                 )
                 # 4: Calculate the loss
                 loss = self.model.build_loss(outs, transcript_out, sent_masks_out)
-                num_loss_ = nn.MSELoss()(num, torch.tensor([sent_masks.shape[1]]).type_as(num))
+                # num_loss_ = nn.MSELoss()(num, torch.tensor([sent_masks.shape[1]]).type_as(num))
+                num_loss_ = self.model.build_loss(num.reshape(-1,1,self.config['max_number_sent']+1), torch.tensor([[[sent_masks.shape[1]]]]).to(num.device), torch.ones(1,1,1).to(num.device))
 
 
 
@@ -256,8 +257,7 @@ class SupervisedTrainer:
             # outs = self.model(img, fixation, fix_masks, transcript_inp, sent_masks_inp)
             # 3: Calculate the loss
             loss = self.model.build_loss(probs, transcript_out, sent_masks_out)
-            num_loss_ = nn.MSELoss()(num, torch.tensor([sent_masks.shape[1]]).type_as(num))
-
+            num_loss_ = self.model.build_loss(num.reshape(-1,1,self.config['max_number_sent']+1), torch.tensor([[[sent_masks.shape[1]]]]).to(num.device), torch.ones(1,1,1).to(num.device))
             # loss = self.model.build_loss(outs, transcript_out, sent_masks_out)
             # 4: Update loss
             running_loss.add(loss.item())
@@ -272,7 +272,7 @@ class SupervisedTrainer:
             # store sentences and dicom_ids
             sentences.extend([tensor2words(outs, dataset.vocab)])
             dicom_ids.extend([dataset.dicom_ids[idx] for idx in indexes])
-            nums.extend([num.item() ])
+            nums.extend([torch.max(num, dim=-1)[1].item() ])
             sentences_gt.extend([tensor2words(transcript_out.squeeze(0), dataset.vocab)])
             dicom_ids_gt.extend([dataset.dicom_ids[idx] for idx in indexes])
             nums_gt.extend([sent_masks.shape[1]])
@@ -304,22 +304,22 @@ class SupervisedTrainer:
         save2json(gt_res_num, os.path.join(self.save_dir, "val_result_num_gt.json"))
     def train(self, train_dataloader, val_dataloader):
         set_seed(self.config["seed"])
-        # add graph to tensorboard
-        dataiter = iter(train_dataloader)
-        img, fixation, fix_masks, transcript, sent_masks = next(dataiter)
-        img = move_to(img, self.device)
-        fixation = move_to(fixation, self.device)
-        fix_masks = move_to(fix_masks, self.device)
-        transcript = move_to(transcript, self.device)
-        sent_masks = move_to(sent_masks, self.device)
+        # # add graph to tensorboard
+        # dataiter = iter(train_dataloader)
+        # img, fixation, fix_masks, transcript, sent_masks = next(dataiter)
+        # img = move_to(img, self.device)
+        # fixation = move_to(fixation, self.device)
+        # fix_masks = move_to(fix_masks, self.device)
+        # transcript = move_to(transcript, self.device)
+        # sent_masks = move_to(sent_masks, self.device)
 
-        transcript_inp, transcript_out = transcript[:, :, :-1], transcript[:, :, 1:]
-        sent_masks_inp, sent_masks_out = sent_masks[:, :, :-1], sent_masks[:, :, 1:]
-        with torch.cuda.amp.autocast(enabled=self.scaler is not None):
-            # 3: Get network outputs
-            self.tsboard.add_graph(
-                self.model, (img, fixation, fix_masks, transcript_inp, sent_masks_inp)
-            )
+        # transcript_inp, transcript_out = transcript[:, :, :-1], transcript[:, :, 1:]
+        # sent_masks_inp, sent_masks_out = sent_masks[:, :, :-1], sent_masks[:, :, 1:]
+        # with torch.cuda.amp.autocast(enabled=self.scaler is not None):
+        #     # 3: Get network outputs
+        #     self.tsboard.add_graph(
+        #         self.model, (img, fixation, fix_masks, transcript_inp, sent_masks_inp)
+        #     )
         for epoch in range(self.nepochs):
             print("\nEpoch {:>3d}".format(epoch))
             print("-----------------------------------")

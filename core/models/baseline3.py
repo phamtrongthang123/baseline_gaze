@@ -49,8 +49,9 @@ class GazeBaseline3(nn.Module):
         self.double_pe = DoublePE(config)
         self.learnable_pe = nn.Embedding(self.max_number_sent,400* config["hidden_size"])
 
-        self.number_prediction = nn.Sequential(nn.Linear(config["hidden_size"], config["hidden_size"]), nn.ReLU(), nn.Linear(config["hidden_size"], 1)) # predict number with this linear simply does not work
-        self.number_prediction = nn.Sequential(nn.Linear(config["hidden_size"], config["hidden_size"]), nn.ReLU(), nn.Linear(config["hidden_size"], 1)) # predict number with this linear simply does not work
+        # self.number_prediction = nn.Sequential(nn.Linear(config["hidden_size"], config["hidden_size"]), nn.ReLU(), nn.Linear(config["hidden_size"], 1)) # predict number with this linear simply does not work
+        # self.number_prediction = nn.Sequential(nn.Linear(config["hidden_size"], config['max_number_sent']), nn.LeakyReLU(), nn.Linear(config['max_number_sent'], config['max_number_sent'])) # predict number with this linear simply does not work
+        self.number_prediction = nn.Linear(config["hidden_size"], config['max_number_sent']+1) # predict number with this linear simply does not work
 
     def forward(self, img, fixation, fix_masks, captions, cap_masks):
         # img torch.Size([1, 3, 224, 224]) fixation torch.Size([1, 400, 3]) fix_masks torch.Size([1, 400, 1]) captions torch.Size([1, 3, 50]) cap_masks torch.Size([1, 3, 50])
@@ -69,7 +70,7 @@ class GazeBaseline3(nn.Module):
         fused_img_fix = self.image_fixation_fusion(
             img_features, fix_feature, length=captions.shape[1]
         )  # torch.Size([ 3, 400, 512])
-        num = self.number_prediction(fused_img_fix[0].mean(0).unsqueeze(0))
+        num = self.number_prediction(fused_img_fix[0].max(dim=0, keepdim=False)[0].unsqueeze(0))
         # learnable_pe = self.learnable_pe.weight.unsqueeze(0).view(self.max_number_sent, 400, -1)
         # fused_img_fix = fused_img_fix + learnable_pe[:captions.shape[1]]
 
@@ -126,7 +127,7 @@ class GazeBaseline3(nn.Module):
         fused_img_fix = self.image_fixation_fusion(
             img_features, fix_feature, self.max_number_sent
         )  # torch.Size([ maxnumsent, 50, 512])
-        num = self.number_prediction(fused_img_fix[0].mean(0).unsqueeze(0))
+        num = self.number_prediction(fused_img_fix[0].max(dim=0, keepdim=False)[0].unsqueeze(0))
         # learnable_pe = self.learnable_pe.weight.unsqueeze(0).view(self.max_number_sent, 400, -1)
         # fused_img_fix = fused_img_fix + learnable_pe
         # decoding
