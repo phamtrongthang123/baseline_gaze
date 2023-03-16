@@ -1,0 +1,71 @@
+id: label-smoothing-pe2-baseline5-transformer-enc-thang-config
+pretrained: null
+seed: 420 # or 2210
+amp: False
+max_number_sent: 20
+
+model:
+    name: GazeBaseline5
+    args:
+        config: 
+            num_attention_heads: 12
+            attention_probs_dropout_prob: 0.1
+            hidden_dropout_prob: 0.1
+            num_hidden_layers: 3
+            hidden_size: 768
+            vocab_size: 1428
+            max_number_sent: 20
+            intermediate_size: 768
+            bottleneck: 4
+            vocab_path: /home/ptthang/gaze_sample/data_here/vocab.json
+optimizer:
+    name: AdamW
+    args:
+        lr: 1.0e-4
+loss:
+    name: CrossEntropyLoss
+    args:
+        # label_smoothing: 0.1
+metric:
+    - name: Bleu_1
+    - name: Bleu_2
+    - name: Bleu_3
+    - name: Bleu_4
+    - name: CIDEr
+    - name: METEOR
+    - name: ROUGE_L
+scheduler: 
+    name: WarmupLinearCosineAnnealing
+    args:
+        lr_warmup_epochs: 20
+dataset: 
+    train:
+        name: GazeReal
+        args:
+            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_train.json
+            vocab: /home/ptthang/gaze_sample/data_here/vocab.json
+            is_train: True 
+        loader:
+            name: DataLoader
+            args:
+                batch_size: 1
+                shuffle: True
+                pin_memory: True
+    val:
+        name: GazeRealEval
+        args:
+            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val.json
+            vocab: /home/ptthang/gaze_sample/data_here/vocab.json
+            is_train: False 
+        loader:
+            name: DataLoader
+            args:
+                batch_size: 1
+                shuffle: False
+                pin_memory: True
+
+trainer: 
+    nepochs: 200
+    val_step: 1
+    log_step: 1
+    log_dir: runs
