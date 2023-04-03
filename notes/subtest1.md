@@ -8,4 +8,5 @@ Ví dụ từ UI CXR
 You should look into the subtest1 folder to read how they clean/format the vocab. We can start with that to build vocab for this subtest.
 
 Anyway, we must create this annotation.json-liked file first, then we can convert it into any repo later.
-TODO: subtest1
+
+TODO: Done subtest1, now we write new dataset class and load it into the model

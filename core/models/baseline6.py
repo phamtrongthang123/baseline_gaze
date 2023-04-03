@@ -55,7 +55,9 @@ class GazeBaseline6(nn.Module):
         self.double_pe = DoublePE(config)
         self.learnable_pe = nn.Embedding(self.max_number_sent,400* config["hidden_size"])
 
-        self.number_prediction = nn.Sequential(nn.Linear(config["hidden_size"], 21))
+        self.number_prediction = nn.Sequential(nn.Linear(config["hidden_size"], 3))
+        self.max_sent_len = 110 # max full transcript is 109, min is 1
+
 
     def forward(self, img, fixation, fix_masks, captions, cap_masks):
         # img torch.Size([1, 3, 224, 224]) fixation torch.Size([1, 400, 3]) fix_masks torch.Size([1, 400, 1]) captions torch.Size([1, 3, 50]) cap_masks torch.Size([1, 3, 50])
@@ -141,18 +143,18 @@ class GazeBaseline6(nn.Module):
             [self.vocab["word2idx"]["<SOS>"]], device=fused_img_fix.device
         ).unsqueeze(0)
         cap_output = einops.repeat(
-            cap_output, "b s ->() (l b) (s k)", l=self.max_number_sent, k=49
+            cap_output, "b s ->() (l b) (s k)", l=self.max_number_sent, k=self.max_sent_len-1
         )  # torch.Size([1, max_num_sent, 50])
         # mask
         cap_masks = torch.zeros(
-            (1, cap_output.shape[1], 49),
+            (1, cap_output.shape[1], self.max_sent_len-1),
             device=fused_img_fix.device,
             dtype=torch.float32,
         )  # torch.Size([1, max_num_sent, 50])
         probs_cap = None
         word_cap = None
         cap_masks[..., 0] = 1.0
-        for i in range(49):
+        for i in range(self.max_sent_len-1):
             cap_output = cap_output.clone()
             if i != 0:
                 cap_output[..., i] = next_token
