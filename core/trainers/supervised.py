@@ -88,7 +88,9 @@ class SupervisedTrainer:
         )
         if pretrained is not None:
             self.optimizer.load_state_dict(pretrained["optimizer_state_dict"])
-
+        # freeze img_encoder.img_encoder from model 
+        for param in self.model.img_encoder.img_encoder.parameters():
+            param.requires_grad_(False)
         # 5: Define Scheduler
         set_seed(config["seed"])
         self.scheduler = get_instance(
