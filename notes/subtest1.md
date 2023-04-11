@@ -9,4 +9,12 @@ You should look into the subtest1 folder to read how they clean/format the vocab
 
 Anyway, we must create this annotation.json-liked file first, then we can convert it into any repo later.
 
-TODO: Done subtest1, now we write new dataset class and load it into the model
+Done subtest1, now we write new dataset class and load it into the model
+Thực tế thì subtest1 mình chạy nhưng vẫn dùng fixation information nên nó thuộc vào subtest3. 
+Để fully subtest1 thì mình phải cắt luôn khúc fusion mà chỉ dùng resnet101 -> transformer decoder. 
+TODO: remove phần fusion và dùng raw image patch rồi qua transformer.
+
+
+
+
+

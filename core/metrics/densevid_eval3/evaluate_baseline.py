@@ -225,6 +225,7 @@ class GazeTranscript(object):
                     else:
                         score = 0
                 else:
+                    # TODO: Fix CIDEr here, the cider only has one gt so there is no way it returns != 0
                     score, scores = scorer.compute_score(gts[dicom_id], res[dicom_id])
                 all_scores[dicom_id] = score
 
