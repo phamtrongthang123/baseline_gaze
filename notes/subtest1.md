@@ -13,7 +13,7 @@ Done subtest1, now we write new dataset class and load it into the model
 Thực tế thì subtest1 mình chạy nhưng vẫn dùng fixation information nên nó thuộc vào subtest3. 
 Để fully subtest1 thì mình phải cắt luôn khúc fusion mà chỉ dùng resnet101 -> transformer decoder. 
 TODO: remove phần fusion và dùng raw image patch rồi qua transformer.
-
+TODO: Sửa code tính điểm cider cho trên full data, gaze sample chứ giờ nó toàn 0.0
 
 
 
