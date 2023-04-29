@@ -7,7 +7,7 @@ import pathlib
 import pickle
 import einops
 import math
-
+from torchvision.models import resnet50, ResNet50_Weights, resnet101, ResNet101_Weights
 import torchvision
 
 

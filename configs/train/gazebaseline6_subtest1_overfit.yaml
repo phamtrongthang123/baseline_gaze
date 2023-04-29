@@ -9,15 +9,15 @@ model:
     args:
         config: 
             num_attention_heads: 12
-            attention_probs_dropout_prob: 0.1
-            hidden_dropout_prob: 0.1
+            attention_probs_dropout_prob: 0.0
+            hidden_dropout_prob: 0.0
             num_hidden_layers: 3
             hidden_size: 768
-            vocab_size: 1428
-            max_number_sent: 20
+            vocab_size: 833
+            max_number_sent: 2
             intermediate_size: 768
             bottleneck: 4
-            vocab_path: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_train_subtest1_vocab.json
+            vocab_path: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val_subtest1_vocab.json
 optimizer:
     name: AdamW
     args:
@@ -37,27 +37,27 @@ metric:
 scheduler: 
     name: WarmupLinearCosineAnnealing
     args:
-        lr_warmup_epochs: 20
+        lr_warmup_epochs: 10
 dataset: 
     train:
         name: GazeReal_subtest1
         args:
-            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_train.json
-            vocab: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_train_subtest1_vocab.json
-            subtest: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_train_subtest1.json
-            is_train: True 
+            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val.json
+            vocab: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val_subtest1_vocab.json
+            subtest: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val_subtest1.json
+            is_train: False 
         loader:
             name: DataLoader
             args:
                 batch_size: 1
-                shuffle: True
+                shuffle: False
                 pin_memory: True
     val:
         name: GazeRealEval_subtest1
         args:
             metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val.json
-            vocab: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_train_subtest1_vocab.json
-            subtest: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_train_subtest1.json
+            vocab: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val_subtest1_vocab.json
+            subtest: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val_subtest1.json
             is_train: False 
         loader:
             name: DataLoader
