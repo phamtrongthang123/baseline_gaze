@@ -4,7 +4,7 @@ seed: 420
 amp: False
 max_number_sent: 20
 model:
-    name: GazeBaseline3
+    name: GazeBaseline7
     args:
         config: 
             num_attention_heads: 8

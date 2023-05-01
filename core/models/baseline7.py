@@ -65,7 +65,7 @@ class GazeBaseline7(nn.Module):
 
         # embedding to create "memory" for decoder
         # embedding for image
-        img_features = self.img_encoder(img)  # torch.Size([1, 1, 512])
+        img_features = self.img_encoder(img)  # torch.Size([1, leni, 512])
 
         # embedding for fixation
         fix_feature = self.fixation_encoder(
@@ -75,8 +75,8 @@ class GazeBaseline7(nn.Module):
         # fusing between img and fixation
         fused_img_fix = self.image_fixation_fusion(
             img_features, fix_feature, length=captions.shape[1]
-        )  # torch.Size([ 3, 400, 512])
-        num = self.number_prediction(img_features)
+        )  # torch.Size([ 3, 400+leni, 512])
+        num = self.number_prediction(img_features.mean(1))  # torch.Size([1, 3])
         # learnable_pe = self.learnable_pe.weight.unsqueeze(0).view(self.max_number_sent, 400, -1)
         # fused_img_fix = fused_img_fix + learnable_pe[:captions.shape[1]]
 
@@ -122,7 +122,7 @@ class GazeBaseline7(nn.Module):
         # embedding to create "memory" for decoder
         # embedding for image
 
-        img_features = self.img_encoder(img)  # torch.Size([1, 1, 512])
+        img_features = self.img_encoder(img)  # torch.Size([1, leni, 512])
 
         # embedding for fixation
         fix_feature = self.fixation_encoder(
@@ -132,8 +132,8 @@ class GazeBaseline7(nn.Module):
         # fusing between img and fixation
         fused_img_fix = self.image_fixation_fusion(
             img_features, fix_feature, self.max_number_sent
-        )  # torch.Size([ maxnumsent, 50, 512])
-        num = self.number_prediction(img_features)
+        )  # torch.Size([ maxnumsent, 400 + leni, 512])
+        num = self.number_prediction(img_features.mean(1))
         # learnable_pe = self.learnable_pe.weight.unsqueeze(0).view(self.max_number_sent, 400, -1)
         # fused_img_fix = fused_img_fix + learnable_pe
         # decoding

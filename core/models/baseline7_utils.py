@@ -41,31 +41,41 @@ class PositionalEncoding(nn.Module):
             x = x + self.pe[: x.shape[1]].view(1, -1, self.d_model)
         return self.dropout(x)
 
-from torchvision.models import resnet50, ResNet50_Weights
 class ImageEncoder(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.img_encoder = torchvision.models.resnet101(
             weights=ResNet101_Weights.IMAGENET1K_V2
         )  # shape out = 512 for resnet 18
+        self.in_dim = self.img_encoder.fc.in_features
+        self.img_encoder.fc = nn.Identity()
+        self.img_encoder.avgpool = nn.Identity()
         self.img_mapping_to_hidden = nn.Sequential(
-            nn.Linear(self.img_encoder.fc.in_features, config["hidden_size"]),
-            nn.ReLU(),
+            nn.Linear(self.in_dim, config["hidden_size"]),
+            nn.GELU(),
             nn.Linear(config["hidden_size"], config["hidden_size"]),
         )  # make it always to hidden size
-        self.img_encoder.fc = nn.Identity()
+        # self.img_encoder.fc = nn.Identity()
+    def image_encoder_forward(self, x):
+        # resnet forward
+        x = self.img_encoder.conv1(x)
+        x = self.img_encoder.bn1(x)
+        x = self.img_encoder.relu(x)
+        x = self.img_encoder.maxpool(x)
 
+        x = self.img_encoder.layer1(x)
+        x = self.img_encoder.layer2(x)
+        x = self.img_encoder.layer3(x)
+        x = self.img_encoder.layer4(x)
+        return x
     def forward(self, x):
         """
         Args:
             x: Tensor, shape [batch, seq_len, embedding_dim] or [seq_len, embedding_dim]
         """
-        img_features = self.img_mapping_to_hidden(
-            self.img_encoder(x)
-        )  # torch.Size([1, 512])
-        img_features = einops.rearrange(
-            img_features, "b l -> b () l"
-        )  # torch.Size([1, 1, 512])
+        img_features_raw = self.image_encoder_forward(x)
+        img_features_reshape = einops.rearrange(img_features_raw, "b c h w -> b (h w) c")
+        img_features = self.img_mapping_to_hidden(img_features_reshape)  # torch.Size([1, leni, emb_dim])
         return img_features
 
 
@@ -84,7 +94,7 @@ class FixationEncoder(nn.Module):
         )
         self.fix_mlp = nn.Sequential(
             nn.Linear(config["hidden_size"], config["hidden_size"]//config['bottleneck']),
-            nn.ReLU(),
+            nn.GELU(),
             nn.Linear(config["hidden_size"]//config['bottleneck'], config["hidden_size"]),
         )
         self.transformer_encoder_layer = nn.TransformerEncoderLayer(
@@ -150,8 +160,8 @@ class FixationEncoder(nn.Module):
 class FixationEncoderPE2D(FixationEncoder):
     def __init__(self, config):
         super().__init__(config)
-        self.fixation_embed_x = nn.Embedding(1000, config["hidden_size"]) # could go to 225 or more, set to 1000 to make it safer
-        self.fixation_embed_y = nn.Embedding(1000, config["hidden_size"])
+        self.fixation_embed_x = nn.Embedding(2000, config["hidden_size"]) # could go to 225 or more, set to 1000 to make it safer
+        self.fixation_embed_y = nn.Embedding(2000, config["hidden_size"])
 
     def fixation_embedding(self, x):
         x_axis = x[:, :, 0].long()
@@ -167,18 +177,18 @@ class FixationEncoderPE2D(FixationEncoder):
 class ImageFixationFuser(nn.Module):
     def __init__(self, config):
         super().__init__()
-        self.adapter_img = nn.Sequential(nn.Linear(config["hidden_size"], config["hidden_size"]//4), nn.ReLU(), nn.Linear(config["hidden_size"]//4, config["hidden_size"]))
-        self.adapter_fix = nn.Sequential(nn.Linear(config["hidden_size"], config["hidden_size"]//4), nn.ReLU(), nn.Linear(config["hidden_size"]//4, config["hidden_size"]))
+        self.adapter_img = nn.Sequential(nn.Linear(config["hidden_size"], config["hidden_size"]//4), nn.GELU(), nn.Linear(config["hidden_size"]//4, config["hidden_size"]))
+        self.adapter_fix = nn.Sequential(nn.Linear(config["hidden_size"], config["hidden_size"]//4), nn.GELU(), nn.Linear(config["hidden_size"]//4, config["hidden_size"]))
         self.att_fused_img_fix = nn.MultiheadAttention(
-            config["hidden_size"]*2,
+            config["hidden_size"],
             config["num_attention_heads"],
             dropout=config["attention_probs_dropout_prob"],
             batch_first=True,
         )
-        self.norm_fused_img_fix = nn.LayerNorm(config["hidden_size"]*2)
+        self.norm_fused_img_fix = nn.LayerNorm(config["hidden_size"])
         self.adapter_mlp = nn.Sequential(
-            nn.Linear(config["hidden_size"]*2, config["hidden_size"]//4),
-            nn.ReLU(),
+            nn.Linear(config["hidden_size"], config["hidden_size"]//4),
+            nn.GELU(),
             nn.Linear(config["hidden_size"]//4, config["hidden_size"]),
         )
         self.double_pe = DoublePE(config)
@@ -186,23 +196,22 @@ class ImageFixationFuser(nn.Module):
     def forward(self, img_features, fix_feature, length):
         """
         Args:
-            img_features: Tensor, shape [batch, 1, embedding_dim] 
+            img_features: Tensor, shape [batch, leni, embedding_dim] 
             fix_feature: Tensor, shape [batch, seq_len, embedding_dim]
             length: int, length of the caption
         """
         # fusing between img and fixation
-        repeat_img = einops.repeat(img_features, "b s d -> b (l s) d", l=fix_feature.shape[1])  # torch.Size([1, 400, 512])
-        repeat_img_a = self.adapter_img(repeat_img)
+        repeat_img_a = self.adapter_img(img_features)
         fix_feature_a = self.adapter_fix(fix_feature)
-        cat_fuse = torch.cat((repeat_img_a , fix_feature_a), dim=-1)  
+        cat_fuse = torch.cat((repeat_img_a , fix_feature_a), dim=1)   # [batch, leni + seq_len, embedding_dim] 
         fused_img_fix = self.att_fused_img_fix(cat_fuse, cat_fuse, cat_fuse)[
             0
-        ]  # torch.Size([1, 400, 512*2])
+        ]  # [batch, leni + seq_len, embedding_dim] 
         fused_img_fix_norm = self.norm_fused_img_fix(fused_img_fix + cat_fuse)
         # repeat to match the shape of caption
         fused_img_fix_norm = einops.repeat(
             fused_img_fix_norm, "b s d -> (l b) s d", l=length
-        )  # torch.Size([3, 400, 512])
+        )  # [batch*length_cap, leni + seq_len, embedding_dim] 
         fused_img_fix_norm = self.adapter_mlp(fused_img_fix_norm)
         fused_img_fix_norm = self.double_pe(fused_img_fix_norm)
         return fused_img_fix_norm
