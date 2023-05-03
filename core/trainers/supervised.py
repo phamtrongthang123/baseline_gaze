@@ -228,8 +228,8 @@ class SupervisedTrainer:
     @torch.no_grad()
     def val_epoch(self, epoch, dataloader):
         dataset = dataloader.dataset
-        running_loss = AverageValueMeter()
-        total_loss = AverageValueMeter()
+        # running_loss = AverageValueMeter()
+        # total_loss = AverageValueMeter()
         num_loss = AverageValueMeter()
 
         self.model.eval()
@@ -255,16 +255,17 @@ class SupervisedTrainer:
             sent_masks_inp, sent_masks_out = sent_masks[:, :, :-1], sent_masks[:, :, 1:]
             # 2: Get network outputs
 
-            outs, probs, num = self.model.generate_greedy(img, fixation, fix_masks)
+            # outs, probs, num = self.model.generate_greedy(img, fixation, fix_masks)
+            outs, tgt_len, num = self.model.beam_search(img, fixation, fix_masks)
             # outs = self.model(img, fixation, fix_masks, transcript_inp, sent_masks_inp)
             # 3: Calculate the loss
-            loss = self.model.build_loss(probs, transcript_out, sent_masks_out)
+            # loss = self.model.build_loss(probs, transcript_out, sent_masks_out)
             num_loss_ = self.model.build_loss(num.reshape(-1,1,self.config['max_number_sent']+1), torch.tensor([[[sent_masks.shape[1]]]]).to(num.device), torch.ones(1,1,1).to(num.device))
             # loss = self.model.build_loss(outs, transcript_out, sent_masks_out)
             # 4: Update loss
-            running_loss.add(loss.item())
+            # running_loss.add(loss.item())
             num_loss.add(num_loss_.item())
-            total_loss.add(loss.item() + num_loss_.item())
+            # total_loss.add(loss.item() + num_loss_.item())
             # # 5: Update metric
             # outs = detach(outs)
             # lbl = detach(lbl)
@@ -281,13 +282,13 @@ class SupervisedTrainer:
             # break
 
         print("+ Evaluation result")
-        avg_loss = running_loss.value()[0]
-        print("Caption Loss:", avg_loss)
+        # avg_loss = running_loss.value()[0]
+        # print("Caption Loss:", avg_loss)
         print("Num Loss:", num_loss.value()[0])
-        print("Total Loss:", total_loss.value()[0])
-        self.val_loss.append(total_loss.value()[0])
-        self.tsboard.update_loss("val", total_loss.value()[0], epoch)
-        self.tsboard.update_metric("val", "caption_loss", running_loss.value()[0], epoch)
+        # print("Total Loss:", total_loss.value()[0])
+        # self.val_loss.append(total_loss.value()[0])
+        # self.tsboard.update_loss("val", total_loss.value()[0], epoch)
+        # self.tsboard.update_metric("val", "caption_loss", running_loss.value()[0], epoch)
         self.tsboard.update_metric("val", "num_loss", num_loss.value()[0], epoch)
         res = {dicom_id: sentence for dicom_id, sentence in zip(dicom_ids, sentences)}
         save2json(res, os.path.join(self.save_dir, f"val_result_{epoch}.json"))
