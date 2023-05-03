@@ -44,13 +44,15 @@ data = torch.randn((1,1,512))
 target = torch.tensor([[1]])
 mask = torch.tensor([[1.0]])
 model = Net()
-
+for name, param in model.named_parameters(): 
+    if param.requires_grad: 
+        print(name)
 optimizer = torch.optim.Adadelta(model.parameters(), lr=1e-3)
-for ep in range(100):
-    optimizer.zero_grad()
-    num = model(data)
-    print(torch.argmax(num, dim=2), num)
-    loss = build_loss(num, target, mask)
-    loss.backward()
-    optimizer.step()
-    print(loss.item())
+# for ep in range(100):
+#     optimizer.zero_grad()
+#     num = model(data)
+#     print(torch.argmax(num, dim=2), num)
+#     loss = build_loss(num, target, mask)
+#     loss.backward()
+#     optimizer.step()
+#     print(loss.item())

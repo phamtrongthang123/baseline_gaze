@@ -81,16 +81,16 @@ class SupervisedTrainer:
         set_seed(config["seed"])
         self.criterion = get_instance(config["loss"]).to(self.device)
 
-        # 4: Define Optimizer
-        set_seed(config["seed"])
-        self.optimizer = get_instance(
-            config["optimizer"], params=self.model.parameters()
-        )
         if pretrained is not None:
             self.optimizer.load_state_dict(pretrained["optimizer_state_dict"])
         # freeze img_encoder.img_encoder from model 
         for param in self.model.img_encoder.img_encoder.parameters():
-            param.requires_grad_(False)
+            param.requires_grad = False
+        # 4: Define Optimizer
+        set_seed(config["seed"])
+        self.optimizer = get_instance(
+            config["optimizer"], params=filter(lambda p: p.requires_grad, self.model.parameters())
+        )
         # 5: Define Scheduler
         set_seed(config["seed"])
         self.scheduler = get_instance(
@@ -184,8 +184,8 @@ class SupervisedTrainer:
                 self.scaler.update()
             else:
                 # 5: Calculate gradients
-                # (loss+num_loss_).backward()
-                loss.backward()
+                (loss+num_loss_).backward()
+                # loss.backward()
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.5)
                 # 6: Performing backpropagation
                 self.optimizer.step()
