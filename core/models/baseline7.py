@@ -207,7 +207,7 @@ class GazeBaseline7(nn.Module):
         bs = 2 # max_num_sent
         max_len = 50
         cap_output = torch.tensor(
-            [self.vocab["SOS"]], device=img.device
+            [self.vocab["word2idx"]["<SOS>"]], device=img.device
         ).unsqueeze(0)
         cap_output = einops.repeat(
             cap_output, "b s ->() (l b) (s k)", l=2*beam_size, k=max_len
@@ -229,7 +229,7 @@ class GazeBaseline7(nn.Module):
         
         length_penalty = 1.0
         generated_hyps = [BeamHypotheses(beam_size, max_len, length_penalty, False) for _ in range(bs)]
-        generated = cap_output.new(bs*beam_size, max_len).fill_(self.vocab["SOS"])
+        generated = cap_output.new(bs*beam_size, max_len).fill_(self.vocab["word2idx"]["<SOS>"])
         for cur_len in range(max_len):
             # cap_output = generated.clone()
             if cur_len != 0:
@@ -268,7 +268,7 @@ class GazeBaseline7(nn.Module):
                 # if we are done with this sentence
                 done[sent_id] = done[sent_id] or generated_hyps[sent_id].is_done(next_scores[sent_id].max().item())
                 if done[sent_id]:
-                    next_batch_beam.extend([(0, self.vocab["PAD"], 0)] * beam_size)  # pad the batch
+                    next_batch_beam.extend([(0, self.vocab["word2idx"]["<PAD>"], 0)] * beam_size)  # pad the batch
                     continue
 
                 # next sentence beam content
@@ -282,7 +282,7 @@ class GazeBaseline7(nn.Module):
                     word_id = idx % self.vocab_size
 
                     # end of sentence, or next word
-                    if word_id == self.vocab["EOS"] or cur_len + 1 == max_len:
+                    if word_id == self.vocab["word2idx"]["<EOS>"] or cur_len + 1 == max_len:
                         generated_hyps[sent_id].add(generated[sent_id * beam_size + beam_id, :cur_len].clone(), value.item())
                     else:
                         next_sent_beam.append((value, word_id, sent_id * beam_size + beam_id))
@@ -294,7 +294,7 @@ class GazeBaseline7(nn.Module):
                 # update next beam content
                 assert len(next_sent_beam) == 0 if cur_len + 1 == max_len else beam_size
                 if len(next_sent_beam) == 0:
-                    next_sent_beam = [(0, self.vocab["PAD"], 0)] * beam_size  # pad the batch
+                    next_sent_beam = [(0, self.vocab["word2idx"]["<PAD>"], 0)] * beam_size  # pad the batch
                 next_batch_beam.extend(next_sent_beam)
                 assert len(next_batch_beam) == beam_size * (sent_id + 1)
 
@@ -320,13 +320,13 @@ class GazeBaseline7(nn.Module):
             best.append(best_hyp)
 
         # generate target batch
-        decoded = img.new(tgt_len.max().item(), bs).fill_(self.vocab["PAD"])
+        decoded = img.new(tgt_len.max().item(), bs).fill_(self.vocab["word2idx"]["<PAD>"])
         for i, hypo in enumerate(best):
             decoded[:tgt_len[i] - 1, i] = hypo
-            decoded[tgt_len[i] - 1, i] = self.vocab["EOS"]
+            decoded[tgt_len[i] - 1, i] = self.vocab["word2idx"]["<EOS>"]
 
         # sanity check
-        # assert (decoded == self.vocab["EOS"]).sum() >= 2 * bs, f'{(decoded == self.vocab["EOS"]).sum()} vs {2 * bs}'
+        # assert (decoded == self.vocab["<EOS>"]).sum() >= 2 * bs, f'{(decoded == self.vocab["<EOS>"]).sum()} vs {2 * bs}'
         # if i use this beam search, i wont be able to compute the loss of the model
         return decoded, tgt_len, num
     
