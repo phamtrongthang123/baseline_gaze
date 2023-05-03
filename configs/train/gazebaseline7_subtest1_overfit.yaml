@@ -1,4 +1,4 @@
-id: label-smoothing-pe2-baseline6-subtest1-transformer-enc-thang-config-overfit
+id: label-smoothing-pe2-baseline7-subtest1-transformer-enc-thang-config-overfit
 pretrained: null
 seed: 420 # or 2210
 amp: False
