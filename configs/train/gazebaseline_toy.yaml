@@ -16,7 +16,7 @@ model:
             max_number_sent: 2
             intermediate_size: 784
             bottleneck: 4
-            vocab_path: /home/ptthang/gaze_sample/data_here/vocab.json
+            vocab_path: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val_subtest1_vocab.json
 optimizer:
     name: AdamW
     args:
@@ -39,11 +39,12 @@ scheduler:
         lr_warmup_epochs: 5
 dataset: 
     train:
-        name: GazeToy
+        name: GazeToy_subtest1
         args:
-            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata.json
-            vocab: /home/ptthang/gaze_sample/data_here/vocab.json
-            is_train: True 
+            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val.json
+            vocab: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val_subtest1_vocab.json
+            subtest: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val_subtest1.json
+            is_train: False 
         loader:
             name: DataLoader
             args:
@@ -51,10 +52,11 @@ dataset:
                 shuffle: False
                 pin_memory: True
     val:
-        name: GazeToyEval
+        name: GazeToyEval_subtest1
         args:
-            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata.json
-            vocab: /home/ptthang/gaze_sample/data_here/vocab.json
+            metadata: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val.json
+            vocab: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val_subtest1_vocab.json
+            subtest: /home/ptthang/gaze_sample/data_here/reflacx_new_metadata_val_subtest1.json
             is_train: False 
         loader:
             name: DataLoader
