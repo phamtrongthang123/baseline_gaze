@@ -348,8 +348,8 @@ class SupervisedTrainer:
                 self.scheduler.step()
 
                 # 4: Saving checkpoints
-                if not self.debug:
-                    # Get latest val loss here
-                    val_loss = self.val_loss[-1]
-                    # val_metric = {k: m[-1] for k, m in self.val_metric.items()}
-                    self.save_checkpoint(epoch, val_loss, None)
+                # if not self.debug:
+                #     # Get latest val loss here
+                #     val_loss = self.val_loss[-1]
+                #     # val_metric = {k: m[-1] for k, m in self.val_metric.items()}
+                #     self.save_checkpoint(epoch, val_loss, None)

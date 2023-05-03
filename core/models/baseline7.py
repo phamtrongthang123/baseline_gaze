@@ -7,6 +7,7 @@ import torchvision
 from .baseline7_utils import *
 import json
 from functorch import vmap
+from .beamsearch_utils import BeamHypotheses
 
 __all__ = ["GazeBaseline7"]
 
@@ -200,17 +201,17 @@ class GazeBaseline7(nn.Module):
 
         # fusing between img and fixation
         fused_img_fix = self.image_fixation_fusion(
-            img_features, fix_feature, self.max_number_sent
-        )  # torch.Size([ maxnumsent, 400 + leni, 512])
+            img_features, fix_feature, self.max_number_sent*beam_size
+        )  # torch.Size([ maxnumsent*beamsize, 400 + leni, 512])
         num = self.number_prediction(img_features.mean(1))
 
-        bs = 2 # max_num_sent
-        max_len = 50
+        bs = self.max_number_sent # max_num_sent
+        max_len = self.max_sent_len - 1
         cap_output = torch.tensor(
             [self.vocab["word2idx"]["<SOS>"]], device=img.device
         ).unsqueeze(0)
         cap_output = einops.repeat(
-            cap_output, "b s ->() (l b) (s k)", l=2*beam_size, k=max_len
+            cap_output, "b s ->() (l b) (s k)", l=self.max_number_sent*beam_size, k=max_len
         )  # torch.Size([1, max_num_sent*beam_size = 3, 50])
         # mask
         cap_masks = torch.zeros(
@@ -319,6 +320,7 @@ class GazeBaseline7(nn.Module):
             tgt_len[i] = len(best_hyp) + 1  # +1 for the <EOS> symbol
             best.append(best_hyp)
 
+
         # generate target batch
         decoded = img.new(tgt_len.max().item(), bs).fill_(self.vocab["word2idx"]["<PAD>"])
         for i, hypo in enumerate(best):
@@ -328,5 +330,6 @@ class GazeBaseline7(nn.Module):
         # sanity check
         # assert (decoded == self.vocab["<EOS>"]).sum() >= 2 * bs, f'{(decoded == self.vocab["<EOS>"]).sum()} vs {2 * bs}'
         # if i use this beam search, i wont be able to compute the loss of the model
-        return decoded, tgt_len, num
+        # remember to swap the dimension of the decoded because the model is predicting the word in the second dimension
+        return einops.rearrange(decoded, 'a b -> b a').long(), tgt_len, num
     
