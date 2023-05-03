@@ -37,7 +37,7 @@ class GazeToy_subtest1(torch.utils.data.Dataset):
         self.is_train = is_train
         with open(self.metadata, "r") as f:
             self.data = json.load(f)
-        self.dicom_ids = list(self.data.keys())[:5]
+        self.dicom_ids = list(self.data.keys())[:50]
         with open(vocab, "r") as f:
             self.vocab = json.load(f)
             self.token2idx = self.vocab["word2idx"]
