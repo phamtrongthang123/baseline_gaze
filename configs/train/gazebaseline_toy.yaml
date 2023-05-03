@@ -1,8 +1,8 @@
-id: sample-toying
+id: sample-toying-baseline7
 pretrained: null
 seed: 420
 amp: False
-max_number_sent: 20
+max_number_sent: 2
 model:
     name: GazeBaseline7
     args:
@@ -13,7 +13,7 @@ model:
             num_hidden_layers: 1
             hidden_size: 784
             vocab_size: 1428
-            max_number_sent: 20
+            max_number_sent: 2
             intermediate_size: 784
             bottleneck: 4
             vocab_path: /home/ptthang/gaze_sample/data_here/vocab.json
