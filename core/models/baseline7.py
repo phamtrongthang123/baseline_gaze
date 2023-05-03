@@ -53,9 +53,9 @@ class GazeBaseline7(nn.Module):
             config["hidden_size"], dropout=config["hidden_dropout_prob"]
         )
         self.double_pe = DoublePE(config)
-        self.learnable_pe = nn.Embedding(self.max_number_sent,400* config["hidden_size"])
+        # self.learnable_pe = nn.Embedding(self.max_number_sent,400* config["hidden_size"])
 
-        self.number_prediction = nn.Sequential(nn.Linear(config["hidden_size"], 3))
+        self.number_prediction = nn.Sequential(nn.Linear(config["hidden_size"], config["hidden_size"]//2),nn.ReLU(), nn.Linear(config["hidden_size"]//2, 3))
         self.max_sent_len = 110 # max full transcript is 109, min is 1
 
 
