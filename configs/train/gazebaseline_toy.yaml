@@ -10,7 +10,7 @@ model:
             num_attention_heads: 8
             attention_probs_dropout_prob: 0.1
             hidden_dropout_prob: 0.1
-            num_hidden_layers: 1
+            num_hidden_layers: 2
             hidden_size: 784
             vocab_size: 833
             max_number_sent: 2
@@ -51,6 +51,7 @@ dataset:
                 batch_size: 1
                 shuffle: False
                 pin_memory: True
+                drop_last: True
     val:
         name: GazeToyEval_subtest1
         args:
@@ -64,6 +65,7 @@ dataset:
                 batch_size: 1
                 shuffle: False
                 pin_memory: True
+                drop_last: True
 
 trainer: 
     nepochs: 100
