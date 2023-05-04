@@ -30,6 +30,8 @@ class BeamHypotheses(object):
         Add a new hypothesis to the list.
         """
         # TODO: bug error warning here
+        if len(hyp) == 0:
+            return
         score = sum_logprobs / len(hyp) ** self.length_penalty
         if len(self) < self.n_hyp or score > self.worst_score:
             self.hyp.append((score, hyp))
