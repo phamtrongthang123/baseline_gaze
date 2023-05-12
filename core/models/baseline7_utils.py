@@ -103,6 +103,7 @@ class FixationEncoder(nn.Module):
             dim_feedforward=config["intermediate_size"],
             dropout=config["hidden_dropout_prob"],
             batch_first=True,
+            norm_first=True, # pre ln 
         )
         self.norm_capout = nn.LayerNorm(config["hidden_size"])
         self.transformer_encoder = nn.TransformerEncoder(
@@ -113,7 +114,8 @@ class FixationEncoder(nn.Module):
         self.pe = PositionalEncoding(
             config["hidden_size"], dropout=config["hidden_dropout_prob"]
         )
-        # self.norm_fixation = nn.LayerNorm(config["hidden_size"])
+        self.norm_fixation = nn.LayerNorm(config["hidden_size"])
+        self.norm_3 = nn.LayerNorm(config["hidden_size"])
 
     def forward(self, fixation, fix_masks):
         """
@@ -132,10 +134,12 @@ class FixationEncoder(nn.Module):
         fix_feature = einops.rearrange(
             fix_feature, "(b s) l -> b s l", b=1
         )  # torch.Size([1, 400, 512])
-
+        fix_feature = self.norm_fixation(fix_feature)
         # Swith vị trí 2 dòng này sẽ khiến model không học được và chỉ dự đoán 1 điểm duy nhất``
         fix_feature_enc = self.transformer_encoder(fix_feature, mask=fix_masks_tril)
-        fix_feature_enc = self.fix_mlp(fix_feature_enc)
+        fix_feature_enc = self.norm_3(fix_feature_enc)
+        fix_feature_enc2 = self.fix_mlp(fix_feature_enc)
+        fix_feature_enc = fix_feature_enc + fix_feature_enc2
 
         return fix_feature_enc
     def fixation_embedding(self, x):
@@ -186,6 +190,7 @@ class ImageFixationFuser(nn.Module):
             batch_first=True,
         )
         self.norm_fused_img_fix = nn.LayerNorm(config["hidden_size"])
+        self.norm_fused_img_fix2 = nn.LayerNorm(config["hidden_size"])
         self.adapter_mlp = nn.Sequential(
             nn.Linear(config["hidden_size"], config["hidden_size"]//4),
             nn.GELU(),
@@ -208,11 +213,12 @@ class ImageFixationFuser(nn.Module):
         fused_img_fix = self.att_fused_img_fix(cat_fuse, cat_fuse, cat_fuse)[
             0
         ]  # [batch, leni + seq_len, embedding_dim] 
-        fused_img_fix_norm = self.norm_fused_img_fix(fused_img_fix + cat_fuse)
+        fused_img_fix_norm = fused_img_fix + cat_fuse
         # repeat to match the shape of caption
         fused_img_fix_norm = einops.repeat(
             fused_img_fix_norm, "b s d -> (l b) s d", l=length
         )  # [batch*length_cap, leni + seq_len, embedding_dim] 
+        fused_img_fix_norm = self.norm_fused_img_fix2(fused_img_fix_norm) # pre-norm
         fused_img_fix_norm = self.adapter_mlp(fused_img_fix_norm)
         fused_img_fix_norm = self.double_pe(fused_img_fix_norm)
         return fused_img_fix_norm
