@@ -204,6 +204,7 @@ class ImageFixationFuser(nn.Module):
         repeat_img_a = self.adapter_img(img_features)
         fix_feature_a = self.adapter_fix(fix_feature)
         cat_fuse = torch.cat((repeat_img_a , fix_feature_a), dim=1)   # [batch, leni + seq_len, embedding_dim] 
+        cat_fuse = self.norm_fused_img_fix(cat_fuse) # pre-norm
         fused_img_fix = self.att_fused_img_fix(cat_fuse, cat_fuse, cat_fuse)[
             0
         ]  # [batch, leni + seq_len, embedding_dim] 

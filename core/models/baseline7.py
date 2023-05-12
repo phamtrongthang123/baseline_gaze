@@ -38,6 +38,7 @@ class GazeBaseline7(nn.Module):
             dim_feedforward=config["intermediate_size"],
             dropout=config["hidden_dropout_prob"],
             batch_first=True,
+            norm_first=True, # pre norm
         )
         self.norm_capout = nn.LayerNorm(config["hidden_size"])
         self.transformer_decoder = nn.TransformerDecoder(
