@@ -69,7 +69,7 @@ dataset:
                 drop_last: True
 
 trainer: 
-    nepochs: 100
+    nepochs: 200
     val_step: 1
     log_step: 1
     log_dir: runs
